@@ -1,5 +1,5 @@
 
-function generate_soybean_mask_MODIS(
+exports.generate_soybean_mask_MODIS = function(
   ROI,
   start_date_minNDVI, 
   end_date_minNDVI, 
@@ -24,9 +24,6 @@ function generate_soybean_mask_MODIS(
       })
       .min()
   
-  print("Minimum NDVI image", minimum_NDVI_image)
-  Map.addLayer(minimum_NDVI_image, {min:-0.2, max:1, palette:palette}, 'Minimum NDVI image')
-  
   
   /******************************************************************/
   // Obtain maximum NDVI image
@@ -41,17 +38,10 @@ function generate_soybean_mask_MODIS(
       })
       .max()
       
-  print("Maximum NDVI image", maximum_NDVI_image)
-  Map.addLayer(maximum_NDVI_image, {min:-0.2, max:1, palette:palette}, 'Maximum NDVI image')
-   
   
   /******************************************************************/
   // NDVI diff image
   var NDVI_diff_image = maximum_NDVI_image.subtract(minimum_NDVI_image)
-  
-  print("NDVI diff image", NDVI_diff_image)
-  Map.addLayer(NDVI_diff_image, {}, 'NDVI diff image')
-  
   
   
   /******************************************************************/
@@ -67,10 +57,7 @@ function generate_soybean_mask_MODIS(
   soybean_mask = soybean_mask
     .reproject('EPSG:4326', null, 250)
     .selfMask()
-  
-  print(soybean_mask)
-  Map.addLayer(soybean_mask, {min:1,max:1,palette:['darkgreen']}, 'soybean_mask')
-  
+
   
   /******************************************************************/
   // Compute the mask area
@@ -91,5 +78,11 @@ function generate_soybean_mask_MODIS(
   var area_m2 = ee.Number(250).multiply(250).multiply(count_mask_pixels);
   var area_ha = area_m2.divide(1e4)
   
-  return soybean_mask
+  // Return min and max NDVI images, soybean mask and mask area (ha)
+  return ee.List([
+    minimum_NDVI_image, 
+    maximum_NDVI_image, 
+    soybean_mask, 
+    area_ha
+  ])
 }
